@@ -1,6 +1,5 @@
 package ru.tasks.performeroflongtasks.service;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -59,7 +58,6 @@ public class TaskService {
         return taskResultRepository.findByTaskId(taskId);
     }
 
-    @PostConstruct
     public void taskInitialization() {
         taskResultRepository.findByProgressLessThan(100)
                 .flatMap(taskResult -> {

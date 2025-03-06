@@ -121,7 +121,7 @@ public class TaskServiceTest {
     @Test
     @DisplayName("Проверка на инициализацию существующих задач.")
     void givenIncompleteTasks_whenTaskInitialization_thenTasksAreRestarted() {
-        TaskResult taskResult = new TaskResult(UUID.randomUUID());
+        TaskResult taskResult = new TaskResult(taskId);
         taskResult.setProgress(50);
 
         when(taskResultRepository.findByProgressLessThan(100)).thenReturn(Flux.just(taskResult));
