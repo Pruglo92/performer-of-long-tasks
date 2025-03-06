@@ -13,6 +13,12 @@ import ru.tasks.performeroflongtasks.service.TaskService;
 
 import java.util.UUID;
 
+/**
+ * Контроллер для управления задачами.
+ * Предоставляет REST API для запуска задач и получения их результатов.
+ *
+ * @author Pruglo92
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/task")
@@ -20,6 +26,14 @@ public class TaskController {
 
     private final TaskService taskService;
 
+    /**
+     * Запускает задачу с заданными параметрами.
+     *
+     * @param min   минимальное значение для генерации случайных чисел
+     * @param max   максимальное значение для генерации случайных чисел
+     * @param count количество случайных чисел для генерации - 1
+     * @return уникальный идентификатор задачи
+     */
     @PostMapping("/start")
     public Mono<UUID> startTask(@RequestParam Integer min,
                                 @RequestParam Integer max,
@@ -27,6 +41,12 @@ public class TaskController {
         return taskService.startTask(min, max, count);
     }
 
+    /**
+     * Получает результат выполнения задачи по её уникальному идентификатору.
+     *
+     * @param taskId уникальный идентификатор задачи
+     * @return результат выполнения задачи
+     */
     @GetMapping("/result/{taskId}")
     public Mono<TaskResult> getResult(@PathVariable UUID taskId) {
         return taskService.getResult(taskId);

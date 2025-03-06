@@ -18,6 +18,12 @@ import static java.util.Objects.nonNull;
 import static ru.tasks.performeroflongtasks.utils.TaskUtil.decodeTaskId;
 import static ru.tasks.performeroflongtasks.utils.TaskUtil.generateTaskId;
 
+/**
+ * Сервис для управления задачами.
+ * Обеспечивает запуск задач, их сохранение, получение результатов и восстановление незавершённых задач.
+ *
+ * @author Pruglo92
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -25,6 +31,16 @@ public class TaskService {
 
     private final TaskResultRepository taskResultRepository;
 
+
+    /**
+     * Запускает задачу с заданными параметрами.
+     * Если задача с таким ID уже существует, возвращается ошибка.
+     *
+     * @param min   минимальное значение для генерации случайных чисел
+     * @param max   максимальное значение для генерации случайных чисел
+     * @param count количество случайных чисел для генерации
+     * @return уникальный идентификатор задачи
+     */
     public Mono<UUID> startTask(Integer min, Integer max, Integer count) {
         UUID taskId = generateTaskId(min, max, count);
 
@@ -36,6 +52,16 @@ public class TaskService {
                 .ofType(UUID.class);
     }
 
+    /**
+     * Запускает выполнение задачи.
+     * Генерирует случайные числа и сохраняет их в результат задачи, обновляя прогресс.
+     *
+     * @param taskResult объект с результатом задачи
+     * @param min        минимальное значение для генерации случайных чисел
+     * @param max        максимальное значение для генерации случайных чисел
+     * @param count      количество случайных чисел для генерации
+     * @param remainder  оставшийся прогресс выполнения задачи
+     */
     public void runTask(TaskResult taskResult, Integer min, Integer max, Integer count, Integer remainder) {
         Flux.fromStream(TestJob.run(min, max, nonNull(remainder) ? remainder : count))
                 .publishOn(Schedulers.boundedElastic())
@@ -50,14 +76,31 @@ public class TaskService {
                 .subscribe();
     }
 
+    /**
+     * Сохраняет результат задачи в базе данных.
+     *
+     * @param taskId уникальный идентификатор задачи
+     * @return результат задачи
+     */
     public Mono<TaskResult> saveTaskResult(UUID taskId) {
         return taskResultRepository.save(new TaskResult(taskId));
     }
 
+    /**
+     * Получает результат выполнения задачи по её уникальному идентификатору.
+     *
+     * @param taskId уникальный идентификатор задачи
+     * @return результат выполнения задачи
+     */
     public Mono<TaskResult> getResult(UUID taskId) {
         return taskResultRepository.findByTaskId(taskId);
     }
 
+
+    /**
+     * Инициализирует незавершённые задачи после перезапуска приложения.
+     * Восстанавливает прогресс задач и продолжает их выполнение.
+     */
     public void taskInitialization() {
         taskResultRepository.findByProgressLessThan(100)
                 .flatMap(taskResult -> {
